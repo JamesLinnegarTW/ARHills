@@ -1,12 +1,12 @@
 import Observable from '../../Observable';
 
 export default class ViewMediator extends Observable {
-    constructor(worldObject, mediatorFactory) {
+    constructor(renderObject, mediatorFactory) {
         super();
-        this.worldObject = worldObject;
+        this.renderObject = renderObject;
         this.mediatorFactory = mediatorFactory;
         this.object3D = this.makeObject3D();
-        this.object3D.name = worldObject.name;
+        this.object3D.name = renderObject.name;
         this.childMediators = new Map();
         this.object3D.traverse((object3D) => {
             object3D.mediator = this;

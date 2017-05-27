@@ -2,14 +2,34 @@ import 'babel-polyfill';
 import 'three';
 import WorldController from './js/controller/WorldController';
 import World from './js/model/World';
-import Point from './js/model/Point';
+
 
 const world = new World();
 const worldController = new WorldController(world);
-let test = new Point("James",{position:{x:1, y:1}});
 
-let test2 = new Point("James",{position:{x:-1, y:-1}});
+worldController.addPoint();
 
+const options = {
+  enableHighAccuracy: false,
+  timeout: 5000,
+  maximumAge: 0
+};
 
-world.addPoint(test);
-world.addPoint(test2);
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(showPosition, errorHandler, options);
+    } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+    }
+}
+
+function showPosition(position) {
+    console.log("Latitude: " + position.coords.latitude +
+    "<br>Longitude: " + position.coords.longitude);
+}
+
+function errorHandler(err) {
+  console.warn('ERROR(' + err.code + '): ' + err.message);
+}
+
+getLocation();

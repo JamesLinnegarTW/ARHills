@@ -1,6 +1,6 @@
-import WorldObject from './WorldObject';
+import RenderObject from './RenderObject';
 
-export default class World extends WorldObject {
+export default class World extends RenderObject {
   constructor(name, properties){
     super(name, properties)
     this.points = [];
