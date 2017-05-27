@@ -2,7 +2,7 @@ import RenderObject from './RenderObject';
 
 export default class World extends RenderObject {
   constructor(name, properties){
-    super(name, properties)
+    super(name, properties);
     this.points = [];
     this.className = 'World';
   }

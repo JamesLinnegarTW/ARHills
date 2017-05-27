@@ -6,8 +6,6 @@ export default class PointViewMediator extends ViewMediator {
     super(point, mediatorFactory);
   }
 
-
-
   makeObject3D() {
     const container = new THREE.Object3D();
 

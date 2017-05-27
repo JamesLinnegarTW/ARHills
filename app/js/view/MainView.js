@@ -8,6 +8,8 @@ export default class MainView {
       this.controller = controller
       this.worldViewMediator = new WorldViewMediator(world, new ViewMediatorFactory());
       this.renderingContext = this.createRenderingContext();
+      this.startClientHeight = window.innerHeight;
+      this.startFOVFrustrumHeight = 2000 * Math.tan( THREE.Math.degToRad( ( this.renderingContext.camera.fov || 75 ) / 2 ) );
     }
 
     createRenderingContext() {
@@ -23,6 +25,9 @@ export default class MainView {
         scene.add(object3D);
 
         window.addEventListener( 'resize', (e) => this.onWindowResize(), false );
+        window.addEventListener( 'touchstart', (e) => {event.preventDefault(); return false;}, false);
+        window.addEventListener( 'touchmove', (e) => {event.preventDefault(); return false;}, false);
+
         this.render();
     }
 
@@ -43,7 +48,7 @@ export default class MainView {
             fulltilt_quaternion.w
           );
 
-        //  this.renderingContext.camera.quaternion.multiplyQuaternions( world_transform, threejs_quaternion );
+          this.renderingContext.camera.quaternion.multiplyQuaternions( world_transform, threejs_quaternion );
         }
         catch(e){
 
@@ -53,8 +58,14 @@ export default class MainView {
         requestAnimationFrame(() => this.render());
     }
 
+
     onWindowResize(){
+
+        const relativeFOVFrustrumHeight = this.startFOVFrustrumHeight * ( window.innerHeight / this.startClientHeight );
+				const relativeVerticalFOV = THREE.Math.radToDeg( 2 * Math.atan( relativeFOVFrustrumHeight / 2000 ) );
+
         this.renderingContext.camera.aspect = window.innerWidth / window.innerHeight;
+        this.renderingContext.camera.fov = relativeVerticalFOV;
         this.renderingContext.camera.updateProjectionMatrix();
         this.renderingContext.renderer.setSize(window.innerWidth, window.innerHeight);
     }
