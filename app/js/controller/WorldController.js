@@ -1,5 +1,6 @@
 import MainView from '../view/MainView';
 
+
 export default class WorldController{
   constructor(world){
     this.world = world;

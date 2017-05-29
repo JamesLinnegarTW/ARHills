@@ -1,14 +1,19 @@
 import WorldViewMediator from './mediator/WorldViewMediator';
 import PointViewMediator from './mediator/PointViewMediator';
+import PedestalViewMediator from './mediator/PedestalViewMediator';
 
 
 export default class ViewMediatorFactory {
-    getMediator(worldObject) {
-        switch (worldObject.className) {
+    getMediator(renderObject) {
+        switch (renderObject.className) {
             case 'World':
-                return new WorldViewMediator(worldObject, this);
+                return new WorldViewMediator(renderObject, this);
             case 'Point':
-                return new PointViewMediator(worldObject, this);
+                return new PointViewMediator(renderObject, this);
+            case 'Pedestal':
+                return new PedestalViewMediator(renderObject, this);
+            default:
+                throw new Error("no mediator for " + renderObject.className);
         }
     }
 }

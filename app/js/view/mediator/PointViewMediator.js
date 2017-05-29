@@ -13,7 +13,7 @@ export default class PointViewMediator extends ViewMediator {
       new THREE.BoxGeometry( 1, 1, 1 ),
       new THREE.MeshBasicMaterial( { color: 0xff0000 } )
     );
-    console.log(this.renderObject.name);
+
     container.rotation.x = Math.random() * 360;
     container.rotation.y = Math.random() * 360;
     container.rotation.z = Math.random() * 360;

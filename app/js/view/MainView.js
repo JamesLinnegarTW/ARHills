@@ -53,9 +53,10 @@ export default class MainView {
         catch(e){
 
         }
+        requestAnimationFrame(() => this.render());
         this.worldViewMediator.onFrameRenderered();
         this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
-        requestAnimationFrame(() => this.render());
+
     }
 
 
