@@ -54,31 +54,38 @@
 
 	var _WorldController2 = _interopRequireDefault(_WorldController);
 
-	var _World = __webpack_require__(308);
+	var _World = __webpack_require__(309);
 
 	var _World2 = _interopRequireDefault(_World);
 
-	var _latlonSpherical = __webpack_require__(310);
+	var _latlonSpherical = __webpack_require__(311);
 
 	var _latlonSpherical2 = _interopRequireDefault(_latlonSpherical);
 
-	var _Point = __webpack_require__(312);
+	var _Point = __webpack_require__(313);
 
 	var _Point2 = _interopRequireDefault(_Point);
 
+	var _Pedestal = __webpack_require__(314);
+
+	var _Pedestal2 = _interopRequireDefault(_Pedestal);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var world = new _World2.default();
+	var pedestal = new _Pedestal2.default('Pedestal');
+	var world = new _World2.default("World", pedestal);
 	var worldController = new _WorldController2.default(world);
 
-	var properties = { position: { bearing: 153, distance: 10, position: { lat: 52.464414, lon: -4.013870 } } };
+	var properties = { position: { bearing: 20, distance: 20, position: { lat: 52.464414, lon: -4.013870 } } };
 	var home = new _Point2.default("Home", properties);
 	world.addPoint(home);
 
-	var options = {
-	    enableHighAccuracy: false,
-	    timeout: 5000,
-	    maximumAge: 0
+	/*
+
+	const options = {
+	  enableHighAccuracy: false,
+	  timeout: 5000,
+	  maximumAge: 0
 	};
 
 	function getLocation() {
@@ -88,16 +95,17 @@
 	}
 
 	function showPosition(position) {
-	    var latlon = new _latlonSpherical2.default(position.coords.latitude, position.coords.longitude);
-	    var homeBearing = new _latlonSpherical2.default(52.464414, -4.013870);
-	    home.properties.position.bearing = homeBearing;
+	    let latlon = new LatLonSpherical(position.coords.latitude, position.coords.longitude);
+	    const homeBearing = new LatLonSpherical(52.464414, -4.013870);
+	    //home.properties.position.bearing = homeBearing;
 	}
 
 	function errorHandler(err) {
-	    console.warn('ERROR(' + err.code + '): ' + err.message);
+	  console.warn('ERROR(' + err.code + '): ' + err.message);
 	}
 
 	getLocation();
+	*/
 
 /***/ }),
 /* 1 */
@@ -50106,11 +50114,11 @@
 
 	                this.renderingContext.camera.quaternion.multiplyQuaternions(world_transform, threejs_quaternion);
 	            } catch (e) {}
-	            this.worldViewMediator.onFrameRenderered();
-	            this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
 	            requestAnimationFrame(function () {
 	                return _this2.render();
 	            });
+	            this.worldViewMediator.onFrameRenderered();
+	            this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
 	        }
 	    }, {
 	        key: 'onWindowResize',
@@ -50153,17 +50161,18 @@
 
 	var RenderingContext = function () {
 	    function RenderingContext(scene, camera, renderer) {
+	        var _this = this;
+
 	        _classCallCheck(this, RenderingContext);
 
 	        var orientationPromise = _fulltilt2.default.getDeviceOrientation({ type: "world" });
-	        var that = this;
 
 	        this.scene = scene;
 	        this.camera = camera;
 	        this.renderer = renderer;
 
 	        orientationPromise.then(function (orientationController) {
-	            that.controls = orientationController;
+	            _this.controls = orientationController;
 	        }).catch(function (reason) {
 	            console.error(reason);
 	        });
@@ -50176,7 +50185,7 @@
 	                height = window.innerHeight;
 	            var scene = new THREE.Scene();
 	            var camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000);
-	            var renderer = new THREE.WebGLRenderer({ alpha: false });
+	            var renderer = new THREE.WebGLRenderer({ alpha: true });
 
 	            renderer.setSize(width, height);
 	            containerElement.appendChild(renderer.domElement);
@@ -51465,6 +51474,10 @@
 	    _this.renderObject.addObserver("PointRemoved", function (e) {
 	      return _this.onPointRemoved(e);
 	    });
+
+	    _this.pedestalViewMediator = _this.mediatorFactory.getMediator(world.pedestal);
+	    _this.object3D.add(_this.pedestalViewMediator.object3D);
+	    window.crap = _this.object3D;
 	    return _this;
 	  }
 
@@ -51678,6 +51691,10 @@
 
 	var _PointViewMediator2 = _interopRequireDefault(_PointViewMediator);
 
+	var _PedestalViewMediator = __webpack_require__(308);
+
+	var _PedestalViewMediator2 = _interopRequireDefault(_PedestalViewMediator);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -51689,12 +51706,16 @@
 
 	    _createClass(ViewMediatorFactory, [{
 	        key: 'getMediator',
-	        value: function getMediator(worldObject) {
-	            switch (worldObject.className) {
+	        value: function getMediator(renderObject) {
+	            switch (renderObject.className) {
 	                case 'World':
-	                    return new _WorldViewMediator2.default(worldObject, this);
+	                    return new _WorldViewMediator2.default(renderObject, this);
 	                case 'Point':
-	                    return new _PointViewMediator2.default(worldObject, this);
+	                    return new _PointViewMediator2.default(renderObject, this);
+	                case 'Pedestal':
+	                    return new _PedestalViewMediator2.default(renderObject, this);
+	                default:
+	                    throw new Error("no mediator for " + renderObject.className);
 	            }
 	        }
 	    }]);
@@ -51745,7 +51766,7 @@
 	      var container = new THREE.Object3D();
 
 	      var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-	      console.log(this.renderObject.name);
+
 	      container.rotation.x = Math.random() * 360;
 	      container.rotation.y = Math.random() * 360;
 	      container.rotation.z = Math.random() * 360;
@@ -51794,7 +51815,62 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _RenderObject2 = __webpack_require__(309);
+	var _ViewMediator2 = __webpack_require__(304);
+
+	var _ViewMediator3 = _interopRequireDefault(_ViewMediator2);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var PedestalViewMediator = function (_ViewMediator) {
+	  _inherits(PedestalViewMediator, _ViewMediator);
+
+	  function PedestalViewMediator(pedestal, mediatorFactory) {
+	    _classCallCheck(this, PedestalViewMediator);
+
+	    return _possibleConstructorReturn(this, (PedestalViewMediator.__proto__ || Object.getPrototypeOf(PedestalViewMediator)).call(this, pedestal, mediatorFactory));
+	  }
+
+	  _createClass(PedestalViewMediator, [{
+	    key: 'makeObject3D',
+	    value: function makeObject3D() {
+
+	      var object3D = new THREE.Mesh(new THREE.CubeGeometry(5, 1, 5),
+	      //  new THREE.CylinderGeometry( ),
+	      new THREE.MeshBasicMaterial({ color: 0xff00ff }));
+
+	      var container = new THREE.Object3D();
+	      container.add(object3D);
+
+	      object3D.position.fromArray([0, -5, 0]);
+
+	      return container;
+	    }
+	  }]);
+
+	  return PedestalViewMediator;
+	}(_ViewMediator3.default);
+
+	exports.default = PedestalViewMediator;
+
+/***/ }),
+/* 309 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _RenderObject2 = __webpack_require__(310);
 
 	var _RenderObject3 = _interopRequireDefault(_RenderObject2);
 
@@ -51809,12 +51885,13 @@
 	var World = function (_RenderObject) {
 	  _inherits(World, _RenderObject);
 
-	  function World(name, properties) {
+	  function World(name, pedestal, properties) {
 	    _classCallCheck(this, World);
 
 	    var _this = _possibleConstructorReturn(this, (World.__proto__ || Object.getPrototypeOf(World)).call(this, name, properties));
 
 	    _this.points = [];
+	    _this.pedestal = pedestal;
 	    _this.className = 'World';
 	    return _this;
 	  }
@@ -51848,7 +51925,7 @@
 	exports.default = World;
 
 /***/ }),
-/* 309 */
+/* 310 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51890,7 +51967,7 @@
 	exports.default = RenderObject;
 
 /***/ }),
-/* 310 */
+/* 311 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51906,7 +51983,7 @@
 	/* www.movable-type.co.uk/scripts/geodesy/docs/module-latlon-spherical.html                       */
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-	var _dms = __webpack_require__(311);
+	var _dms = __webpack_require__(312);
 
 	var _dms2 = _interopRequireDefault(_dms);
 
@@ -52484,7 +52561,7 @@
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 /***/ }),
-/* 311 */
+/* 312 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -52835,7 +52912,7 @@
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 /***/ }),
-/* 312 */
+/* 313 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52846,7 +52923,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _RenderObject2 = __webpack_require__(309);
+	var _RenderObject2 = __webpack_require__(310);
 
 	var _RenderObject3 = _interopRequireDefault(_RenderObject2);
 
@@ -52883,6 +52960,45 @@
 	}(_RenderObject3.default);
 
 	exports.default = Point;
+
+/***/ }),
+/* 314 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _RenderObject2 = __webpack_require__(310);
+
+	var _RenderObject3 = _interopRequireDefault(_RenderObject2);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Pedestal = function (_RenderObject) {
+	  _inherits(Pedestal, _RenderObject);
+
+	  function Pedestal(name, properties) {
+	    _classCallCheck(this, Pedestal);
+
+	    var _this = _possibleConstructorReturn(this, (Pedestal.__proto__ || Object.getPrototypeOf(Pedestal)).call(this, name, properties));
+
+	    _this.className = "Pedestal";
+	    return _this;
+	  }
+
+	  return Pedestal;
+	}(_RenderObject3.default);
+
+	exports.default = Pedestal;
 
 /***/ })
 /******/ ]);
