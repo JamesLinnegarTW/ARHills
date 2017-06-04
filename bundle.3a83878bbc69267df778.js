@@ -76,16 +76,16 @@
 	var world = new _World2.default("World", pedestal);
 	var worldController = new _WorldController2.default(world);
 
-	var properties = { position: { bearing: 20, distance: 20, position: { lat: 52.464414, lon: -4.013870 } } };
-	var home = new _Point2.default("Home", properties);
-	world.addPoint(home);
+	var latLon = new _latlonSpherical2.default(53.363701, -2.002889);
 
-	/*
+	var manchester = new _Point2.default("Manchester", { position: { bearing: 0, distance: 20, latlon: latLon } });
 
-	const options = {
-	  enableHighAccuracy: false,
-	  timeout: 5000,
-	  maximumAge: 0
+	world.addPoint(manchester);
+
+	var options = {
+	    enableHighAccuracy: false,
+	    timeout: 5000,
+	    maximumAge: 0
 	};
 
 	function getLocation() {
@@ -95,17 +95,16 @@
 	}
 
 	function showPosition(position) {
-	    let latlon = new LatLonSpherical(position.coords.latitude, position.coords.longitude);
-	    const homeBearing = new LatLonSpherical(52.464414, -4.013870);
-	    //home.properties.position.bearing = homeBearing;
+	    var currentLocation = new _latlonSpherical2.default(position.coords.latitude, position.coords.longitude);
+	    var bearing = currentLocation.bearingTo(manchester.properties.position.latlon);
+	    manchester.properties.position.bearing = bearing;
 	}
 
 	function errorHandler(err) {
-	  console.warn('ERROR(' + err.code + '): ' + err.message);
+	    console.warn('ERROR(' + err.code + '): ' + err.message);
 	}
 
 	getLocation();
-	*/
 
 /***/ }),
 /* 1 */
@@ -51477,7 +51476,7 @@
 
 	    _this.pedestalViewMediator = _this.mediatorFactory.getMediator(world.pedestal);
 	    _this.object3D.add(_this.pedestalViewMediator.object3D);
-	    window.crap = _this.object3D;
+
 	    return _this;
 	  }
 
@@ -51775,6 +51774,11 @@
 	      return container;
 	    }
 	  }, {
+	    key: 'updateBearing',
+	    value: function updateBearing(e) {
+	      console.log('bearing updated', e);
+	    }
+	  }, {
 	    key: 'getPositionFromBearingAndDistance',
 	    value: function getPositionFromBearingAndDistance(bearing, distance) {
 
@@ -51902,6 +51906,7 @@
 	      point.parent = this;
 	      this.points.push(point);
 	      this.emit('PointAdded', { point: point });
+	      this.emit('LocationUpdated', {});
 	    }
 	  }, {
 	    key: 'removePoint',
