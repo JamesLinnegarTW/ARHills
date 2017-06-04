@@ -22,6 +22,10 @@ export default class PointViewMediator extends ViewMediator {
     return container;
   }
 
+  updateBearing(e){
+    console.log('bearing updated', e);
+  }
+
   getPositionFromBearingAndDistance(bearing, distance) {
 
     const angle = THREE.Math.degToRad(bearing-90)

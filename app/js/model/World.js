@@ -12,6 +12,7 @@ export default class World extends RenderObject {
     point.parent = this;
     this.points.push(point);
     this.emit('PointAdded', { point });
+    this.emit('LocationUpdated', {  });
   }
 
   removePoint(point) {

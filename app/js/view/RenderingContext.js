@@ -22,7 +22,6 @@ export default class RenderingContext {
         const camera = new THREE.PerspectiveCamera( 75, width / height, 1, 1000);
         const renderer = new THREE.WebGLRenderer( { alpha : true } );
 
-
         renderer.setSize(width, height);
         containerElement.appendChild(renderer.domElement);
         return new RenderingContext(scene, camera, renderer);
