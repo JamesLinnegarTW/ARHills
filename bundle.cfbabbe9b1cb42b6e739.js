@@ -58,31 +58,29 @@
 
 	var _World2 = _interopRequireDefault(_World);
 
-	var _latlonSpherical = __webpack_require__(311);
+	var _latlonSpherical = __webpack_require__(312);
 
 	var _latlonSpherical2 = _interopRequireDefault(_latlonSpherical);
 
-	var _Point = __webpack_require__(313);
+	var _Point = __webpack_require__(314);
 
 	var _Point2 = _interopRequireDefault(_Point);
 
-	var _Pedestal = __webpack_require__(314);
+	var _Pedestal = __webpack_require__(311);
 
 	var _Pedestal2 = _interopRequireDefault(_Pedestal);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var pedestal = new _Pedestal2.default('Pedestal');
-	var world = new _World2.default("World", pedestal);
+	var world = new _World2.default("World");
 	var worldController = new _WorldController2.default(world);
 
 	var latLon = new _latlonSpherical2.default(53.363701, -2.002889);
 
-	var manchester = new _Point2.default("Manchester", { position: { bearing: 0, distance: 20, latlon: latLon } });
-
+	var manchester = new _Point2.default("Manchester", latLon, { position: { bearing: 0, distance: 20 } });
 	world.addPoint(manchester);
 
-	var options = {
+	var GPS_OPTIONS = {
 	    enableHighAccuracy: false,
 	    timeout: 5000,
 	    maximumAge: 0
@@ -90,14 +88,13 @@
 
 	function getLocation() {
 	    if (navigator.geolocation) {
-	        navigator.geolocation.watchPosition(showPosition, errorHandler, options);
+	        navigator.geolocation.watchPosition(showPosition, errorHandler, GPS_OPTIONS);
 	    }
 	}
 
 	function showPosition(position) {
 	    var currentLocation = new _latlonSpherical2.default(position.coords.latitude, position.coords.longitude);
-	    var bearing = currentLocation.bearingTo(manchester.properties.position.latlon);
-	    manchester.properties.position.bearing = bearing;
+	    worldController.setLocation(currentLocation);
 	}
 
 	function errorHandler(err) {
@@ -50008,6 +50005,8 @@
 	  value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _MainView = __webpack_require__(300);
 
 	var _MainView2 = _interopRequireDefault(_MainView);
@@ -50016,13 +50015,24 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var WorldController = function WorldController(world) {
-	  _classCallCheck(this, WorldController);
+	var WorldController = function () {
+	  function WorldController(world) {
+	    _classCallCheck(this, WorldController);
 
-	  this.world = world;
-	  this.view = new _MainView2.default(this, world);
-	  this.view.initialize();
-	};
+	    this.world = world;
+	    this.view = new _MainView2.default(this, world);
+	    this.view.initialize();
+	  }
+
+	  _createClass(WorldController, [{
+	    key: 'setLocation',
+	    value: function setLocation(currentLatLon) {
+	      this.world.updateLocation(currentLatLon);
+	    }
+	  }]);
+
+	  return WorldController;
+	}();
 
 	exports.default = WorldController;
 
@@ -50185,7 +50195,7 @@
 	            var scene = new THREE.Scene();
 	            var camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000);
 	            var renderer = new THREE.WebGLRenderer({ alpha: true });
-
+	            //camera.position.y = 50;
 	            renderer.setSize(width, height);
 	            containerElement.appendChild(renderer.domElement);
 	            return new RenderingContext(scene, camera, renderer);
@@ -51534,9 +51544,11 @@
 	        _this.object3D = _this.makeObject3D();
 	        _this.object3D.name = renderObject.name;
 	        _this.childMediators = new Map();
+
 	        _this.object3D.traverse(function (object3D) {
 	            object3D.mediator = _this;
 	        });
+
 	        return _this;
 	    }
 
@@ -51763,20 +51775,10 @@
 	    key: 'makeObject3D',
 	    value: function makeObject3D() {
 	      var container = new THREE.Object3D();
+	      var point = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
 
-	      var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-
-	      container.rotation.x = Math.random() * 360;
-	      container.rotation.y = Math.random() * 360;
-	      container.rotation.z = Math.random() * 360;
-
-	      container.add(mesh);
+	      container.add(point);
 	      return container;
-	    }
-	  }, {
-	    key: 'updateBearing',
-	    value: function updateBearing(e) {
-	      console.log('bearing updated', e);
 	    }
 	  }, {
 	    key: 'getPositionFromBearingAndDistance',
@@ -51796,9 +51798,8 @@
 
 	      var position = this.getPositionFromBearingAndDistance(this.renderObject.properties.position.bearing, this.renderObject.properties.position.distance);
 
-	      this.object3D.position.fromArray(position);
-	      this.object3D.rotation.z += 0.01;
 	      this.object3D.rotation.y += 0.01;
+	      this.object3D.position.fromArray(position);
 	    }
 	  }]);
 
@@ -51844,15 +51845,19 @@
 	    key: 'makeObject3D',
 	    value: function makeObject3D() {
 
-	      var object3D = new THREE.Mesh(new THREE.CubeGeometry(5, 1, 5),
-	      //  new THREE.CylinderGeometry( ),
-	      new THREE.MeshBasicMaterial({ color: 0xff00ff }));
+	      var cone = new THREE.Mesh(function () {
+	        var radius = 2;
+	        var height = 4;
+	        var rSegments = 32;
+	        var geom = new THREE.CylinderBufferGeometry(0, radius, height, rSegments, 1, true);
+	        geom.translate(0, height / 2, 0);
+	        return geom;
+	      }(), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
 
 	      var container = new THREE.Object3D();
-	      container.add(object3D);
-
-	      object3D.position.fromArray([0, -5, 0]);
-
+	      container.add(cone);
+	      cone.position.fromArray([0, -5, 0]);
+	      cone.rotation.x = -90;
 	      return container;
 	    }
 	  }]);
@@ -51878,6 +51883,10 @@
 
 	var _RenderObject3 = _interopRequireDefault(_RenderObject2);
 
+	var _Pedestal = __webpack_require__(311);
+
+	var _Pedestal2 = _interopRequireDefault(_Pedestal);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -51889,24 +51898,23 @@
 	var World = function (_RenderObject) {
 	  _inherits(World, _RenderObject);
 
-	  function World(name, pedestal, properties) {
+	  function World(name, properties) {
 	    _classCallCheck(this, World);
 
 	    var _this = _possibleConstructorReturn(this, (World.__proto__ || Object.getPrototypeOf(World)).call(this, name, properties));
 
 	    _this.points = [];
-	    _this.pedestal = pedestal;
+	    _this.pedestal = new _Pedestal2.default('Pedestal');
 	    _this.className = 'World';
+	    _this.location = null;
 	    return _this;
 	  }
 
 	  _createClass(World, [{
 	    key: 'addPoint',
 	    value: function addPoint(point) {
-	      point.parent = this;
 	      this.points.push(point);
 	      this.emit('PointAdded', { point: point });
-	      this.emit('LocationUpdated', {});
 	    }
 	  }, {
 	    key: 'removePoint',
@@ -51916,6 +51924,16 @@
 	        this.points.splice(index, 1);
 	      }
 	      this.emit('PointRemoved', { point: point });
+	    }
+	  }, {
+	    key: 'updateLocation',
+	    value: function updateLocation(currentLatLon) {
+	      var _this2 = this;
+
+	      this.location = currentLatLon;
+	      this.points.forEach(function (point) {
+	        point.updateBearing(_this2.location);
+	      });
 	    }
 	  }, {
 	    key: Symbol.iterator,
@@ -51975,6 +51993,45 @@
 /* 311 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _RenderObject2 = __webpack_require__(310);
+
+	var _RenderObject3 = _interopRequireDefault(_RenderObject2);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Pedestal = function (_RenderObject) {
+	  _inherits(Pedestal, _RenderObject);
+
+	  function Pedestal(name, properties) {
+	    _classCallCheck(this, Pedestal);
+
+	    var _this = _possibleConstructorReturn(this, (Pedestal.__proto__ || Object.getPrototypeOf(Pedestal)).call(this, name, properties));
+
+	    _this.className = "Pedestal";
+	    return _this;
+	  }
+
+	  return Pedestal;
+	}(_RenderObject3.default);
+
+	exports.default = Pedestal;
+
+/***/ }),
+/* 312 */
+/***/ (function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
@@ -51988,7 +52045,7 @@
 	/* www.movable-type.co.uk/scripts/geodesy/docs/module-latlon-spherical.html                       */
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-	var _dms = __webpack_require__(312);
+	var _dms = __webpack_require__(313);
 
 	var _dms2 = _interopRequireDefault(_dms);
 
@@ -52566,7 +52623,7 @@
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 /***/ }),
-/* 312 */
+/* 313 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -52917,7 +52974,7 @@
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 /***/ }),
-/* 313 */
+/* 314 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52932,6 +52989,10 @@
 
 	var _RenderObject3 = _interopRequireDefault(_RenderObject2);
 
+	var _latlonSpherical = __webpack_require__(312);
+
+	var _latlonSpherical2 = _interopRequireDefault(_latlonSpherical);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -52943,18 +53004,27 @@
 	var Point = function (_RenderObject) {
 	    _inherits(Point, _RenderObject);
 
-	    function Point(name, properties) {
+	    function Point(name, location, properties) {
 	        _classCallCheck(this, Point);
 
 	        var _this = _possibleConstructorReturn(this, (Point.__proto__ || Object.getPrototypeOf(Point)).call(this, name, properties));
 
 	        _this.className = 'Point';
+	        _this.location = location;
 	        _this.properties = properties;
 	        _this.points = [];
 	        return _this;
 	    }
 
 	    _createClass(Point, [{
+	        key: 'updateBearing',
+	        value: function updateBearing(currentLatLon) {
+	            try {
+	                var bearing = currentLatLon.bearingTo(this.location);
+	                this.properties.position.bearing = bearing;
+	            } catch (e) {}
+	        }
+	    }, {
 	        key: Symbol.iterator,
 	        value: function value() {
 	            return this.points.values();
@@ -52965,45 +53035,6 @@
 	}(_RenderObject3.default);
 
 	exports.default = Point;
-
-/***/ }),
-/* 314 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _RenderObject2 = __webpack_require__(310);
-
-	var _RenderObject3 = _interopRequireDefault(_RenderObject2);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Pedestal = function (_RenderObject) {
-	  _inherits(Pedestal, _RenderObject);
-
-	  function Pedestal(name, properties) {
-	    _classCallCheck(this, Pedestal);
-
-	    var _this = _possibleConstructorReturn(this, (Pedestal.__proto__ || Object.getPrototypeOf(Pedestal)).call(this, name, properties));
-
-	    _this.className = "Pedestal";
-	    return _this;
-	  }
-
-	  return Pedestal;
-	}(_RenderObject3.default);
-
-	exports.default = Pedestal;
 
 /***/ })
 /******/ ]);
