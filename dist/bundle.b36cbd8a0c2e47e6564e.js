@@ -34,7 +34,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/";
+/******/ 	__webpack_require__.p = "/dist/";
 
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -50195,7 +50195,7 @@
 	            var scene = new THREE.Scene();
 	            var camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000);
 	            var renderer = new THREE.WebGLRenderer({ alpha: true });
-	            //camera.position.y = 50;
+	            camera.position.y = 50;
 	            renderer.setSize(width, height);
 	            containerElement.appendChild(renderer.domElement);
 	            return new RenderingContext(scene, camera, renderer);
@@ -51775,8 +51775,21 @@
 	    key: 'makeObject3D',
 	    value: function makeObject3D() {
 	      var container = new THREE.Object3D();
-	      var point = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
 
+	      var cone = new THREE.Mesh(function () {
+	        var radius = 1;
+	        var height = 2;
+	        var rSegments = 32;
+	        var geom = new THREE.CylinderBufferGeometry(0, radius, height, rSegments, 1, true);
+	        geom.translate(0, height / 2, 0);
+	        return geom;
+	      }(), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+
+	      cone.rotation.z = 180;
+	      cone.position.y = -1;
+
+	      var point = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+	      container.add(cone);
 	      container.add(point);
 	      return container;
 	    }
@@ -51798,7 +51811,7 @@
 
 	      var position = this.getPositionFromBearingAndDistance(this.renderObject.properties.position.bearing, this.renderObject.properties.position.distance);
 
-	      this.object3D.rotation.y += 0.01;
+	      //this.object3D.rotation.y += 0.01;
 	      this.object3D.position.fromArray(position);
 	    }
 	  }]);
