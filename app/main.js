@@ -6,20 +6,17 @@ import LatLonSpherical from './js/lib/latlon-spherical';
 import Point from './js/model/Point';
 import Pedestal from './js/model/Pedestal';
 
-
-const pedestal = new Pedestal('Pedestal');
-const world = new World("World", pedestal);
+const world = new World("World");
 const worldController = new WorldController(world);
 
 const latLon = new LatLonSpherical(53.363701, -2.002889);
 
-let manchester = new Point("Manchester",{position:{bearing: 0, distance:20, latlon:latLon}});
 
-
+let manchester = new Point("Manchester", latLon, {position:{bearing: 0, distance:20}});
 world.addPoint(manchester);
 
 
-const options = {
+const GPS_OPTIONS = {
   enableHighAccuracy: false,
   timeout: 5000,
   maximumAge: 0
@@ -27,14 +24,13 @@ const options = {
 
 function getLocation() {
     if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(showPosition, errorHandler, options);
+        navigator.geolocation.watchPosition(showPosition, errorHandler, GPS_OPTIONS);
     }
 }
 
 function showPosition(position) {
     const currentLocation = new LatLonSpherical(position.coords.latitude, position.coords.longitude);
-    const bearing = currentLocation.bearingTo(manchester.properties.position.latlon);
-    manchester.properties.position.bearing = bearing;
+    worldController.setLocation(currentLocation);
 }
 
 function errorHandler(err) {

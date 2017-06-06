@@ -8,4 +8,8 @@ export default class WorldController{
     this.view.initialize();
   }
 
+  setLocation(currentLatLon){
+    this.world.updateLocation(currentLatLon);
+  }
+
 }

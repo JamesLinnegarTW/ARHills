@@ -7,17 +7,22 @@ export default class PedestalViewMediator extends ViewMediator {
 
   makeObject3D(){
 
-    const object3D = new THREE.Mesh(
-      new THREE.CubeGeometry(5,1,5),
-    //  new THREE.CylinderGeometry( ),
-      new THREE.MeshBasicMaterial( { color: 0xff00ff } )
-    );
+    const cone = new THREE.Mesh(
+        function() {
+            const radius = 2;
+            const height = 4;
+            const rSegments = 32;
+            var geom = new THREE.CylinderBufferGeometry(0,radius,height,rSegments,1,true);
+            geom.translate(0,height/2,0);
+            return geom;
+        }(),
+        new THREE.MeshBasicMaterial( { color: 0x0000ff } )
+      );
 
     const container = new THREE.Object3D();
-    container.add(object3D);
-
-    object3D.position.fromArray([0,-5,0]);
-
+    container.add(cone);
+    cone.position.fromArray([0,-5,0]);
+    cone.rotation.x = -90;
     return container;
   }
 

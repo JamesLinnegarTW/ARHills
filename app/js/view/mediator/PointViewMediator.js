@@ -2,28 +2,20 @@ import ViewMediator from './ViewMediator';
 
 export default class PointViewMediator extends ViewMediator {
 
+
   constructor(point, mediatorFactory){
     super(point, mediatorFactory);
   }
 
   makeObject3D() {
     const container = new THREE.Object3D();
-
-    const mesh =  new THREE.Mesh(
+    const point =  new THREE.Mesh(
       new THREE.BoxGeometry( 1, 1, 1 ),
       new THREE.MeshBasicMaterial( { color: 0xff0000 } )
     );
 
-    container.rotation.x = Math.random() * 360;
-    container.rotation.y = Math.random() * 360;
-    container.rotation.z = Math.random() * 360;
-
-    container.add(mesh);
+    container.add(point);
     return container;
-  }
-
-  updateBearing(e){
-    console.log('bearing updated', e);
   }
 
   getPositionFromBearingAndDistance(bearing, distance) {
@@ -43,8 +35,8 @@ export default class PointViewMediator extends ViewMediator {
     const position = this.getPositionFromBearingAndDistance(this.renderObject.properties.position.bearing,
                                                        this.renderObject.properties.position.distance);
 
+
+                                                       this.object3D.rotation.y += 0.01;
     this.object3D.position.fromArray(position);
-    this.object3D.rotation.z  += 0.01;
-    this.object3D.rotation.y  += 0.01;
   }
 }

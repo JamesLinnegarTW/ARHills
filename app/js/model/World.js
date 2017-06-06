@@ -1,18 +1,18 @@
 import RenderObject from './RenderObject';
+import Pedestal from './Pedestal';
 
 export default class World extends RenderObject {
-  constructor(name, pedestal, properties){
+  constructor(name, properties){
     super(name, properties);
     this.points = [];
-    this.pedestal = pedestal;
+    this.pedestal = new Pedestal('Pedestal');
     this.className = 'World';
+    this.location = null;
   }
 
   addPoint(point){
-    point.parent = this;
     this.points.push(point);
     this.emit('PointAdded', { point });
-    this.emit('LocationUpdated', {  });
   }
 
   removePoint(point) {
@@ -21,6 +21,14 @@ export default class World extends RenderObject {
       this.points.splice(index, 1);
     }
     this.emit('PointRemoved', { point });
+  }
+
+  updateLocation(currentLatLon){
+    this.location = currentLatLon;
+    this.points.forEach((point)=>{
+      point.updateBearing(this.location);
+    });
+
   }
 
   [Symbol.iterator]() {
