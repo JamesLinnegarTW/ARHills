@@ -13,7 +13,7 @@ const config = {
     },
     output: {
         path: distPath,
-        publicPath: '/',
+        publicPath: '/ARHills/',
         filename: 'bundle.[hash].js'
     },
     plugins: [
