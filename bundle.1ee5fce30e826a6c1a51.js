@@ -50195,7 +50195,7 @@
 	            var scene = new THREE.Scene();
 	            var camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000);
 	            var renderer = new THREE.WebGLRenderer({ alpha: true });
-	            camera.position.y = 50;
+	            //camera.position.y = 50;
 	            renderer.setSize(width, height);
 	            containerElement.appendChild(renderer.domElement);
 	            return new RenderingContext(scene, camera, renderer);
