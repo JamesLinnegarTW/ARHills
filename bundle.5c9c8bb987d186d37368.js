@@ -51776,6 +51776,10 @@
 	    value: function makeObject3D() {
 	      var container = new THREE.Object3D();
 
+	      var box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+
+	      var sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+
 	      var cone = new THREE.Mesh(function () {
 	        var radius = 1;
 	        var height = 2;
@@ -51784,13 +51788,12 @@
 	        geom.translate(0, height / 2, 0);
 	        return geom;
 	      }(), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
-
-	      cone.rotation.z = 180;
-	      cone.position.y = -1;
-
-	      var point = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+	      cone.rotation.z = THREE.Math.degToRad(180);
+	      container.add(box);
 	      container.add(cone);
-	      container.add(point);
+	      container.add(sphere);
+
+	      //cone.position.y = -1;
 	      return container;
 	    }
 	  }, {
