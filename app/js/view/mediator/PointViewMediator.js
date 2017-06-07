@@ -27,19 +27,16 @@ export default class PointViewMediator extends ViewMediator {
 
 
   	var canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 60;
+    canvas.width = 256;
+    canvas.height = 64;
   	var context = canvas.getContext('2d');
-  	context.font =  "20px Arial Sans MS";
+  	context.font =  "30px Arial Sans MS";
     context.fillStyle = "black";
     context.textAlign = "center";
     context.textBaseline = "middle";
   	// get size data (height depends only on font size)
   	var metrics = context.measureText( message );
     console.log(metrics);
-    //canvas.width = metrics.width;
-    //canvas.height = metrics.height;
-
   	// background color
   	context.fillText(message, canvas.width/2, canvas.height/2);
 
@@ -50,7 +47,7 @@ export default class PointViewMediator extends ViewMediator {
   	var spriteMaterial = new THREE.SpriteMaterial(
   		{ map: texture } );
   	var sprite = new THREE.Sprite( spriteMaterial );
-  	sprite.scale.set(10,3,1.0);
+  	sprite.scale.set(10,3,0);
   	return sprite;
   }
 
