@@ -12,4 +12,12 @@ export default class WorldController{
     this.world.updateLocation(currentLatLon);
   }
 
+  addPoint(point){
+    this.world.addPoint(point);
+  }
+
+  removePoint(point){
+    this.world.removePoint(point);
+  }
+
 }

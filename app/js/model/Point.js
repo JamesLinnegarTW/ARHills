@@ -19,9 +19,4 @@ export default class Point extends RenderObject {
       }
 
     }
-
-    [Symbol.iterator]() {
-        return this.points.values();
-    }
-
 }

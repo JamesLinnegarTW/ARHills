@@ -32,34 +32,37 @@ export default class MainView {
     }
 
     render() {
-        try {
-          // World frame quaternion transform (- PI/2 around the x-axis)
-          const world_transform = new THREE.Quaternion( - Math.sqrt( 0.5 ), 0, 0, Math.sqrt( 0.5 ) );
-          // Computed device orientation rotation vector
-          let threejs_quaternion = new THREE.Quaternion();
-          let fulltilt_quaternion;
-
-          fulltilt_quaternion = this.renderingContext.controls.getScreenAdjustedQuaternion();
-
-          threejs_quaternion.set(
-            fulltilt_quaternion.x,
-            fulltilt_quaternion.y,
-            fulltilt_quaternion.z,
-            fulltilt_quaternion.w
-          );
-
-          this.renderingContext.camera.quaternion.multiplyQuaternions( world_transform, threejs_quaternion );
-        }
-        catch(e){
-
-        }
+        this.orientateCamera();
         requestAnimationFrame(() => this.render());
         this.worldViewMediator.onFrameRenderered();
         this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
 
     }
 
+    orientateCamera(){
+      try {
+        // World frame quaternion transform (- PI/2 around the x-axis)
+        const world_transform = new THREE.Quaternion( - Math.sqrt( 0.5 ), 0, 0, Math.sqrt( 0.5 ) );
+        // Computed device orientation rotation vector
+        let threejs_quaternion = new THREE.Quaternion();
+        let fulltilt_quaternion;
 
+        fulltilt_quaternion = this.renderingContext.controls.getScreenAdjustedQuaternion();
+
+        threejs_quaternion.set(
+          fulltilt_quaternion.x,
+          fulltilt_quaternion.y,
+          fulltilt_quaternion.z,
+          fulltilt_quaternion.w
+        );
+
+        this.renderingContext.camera.quaternion.multiplyQuaternions( world_transform, threejs_quaternion );
+      }
+      catch(e){
+
+      }
+    }
+    
     onWindowResize(){
 
         const relativeFOVFrustrumHeight = this.startFOVFrustrumHeight * ( window.innerHeight / this.startClientHeight );

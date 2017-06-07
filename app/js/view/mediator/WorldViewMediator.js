@@ -6,7 +6,7 @@ export default class WorldViewMediator extends ViewMediator {
 
     this.renderObject.addObserver("PointAdded", (e) => this.onPointAdded(e));
     this.renderObject.addObserver("PointRemoved", (e) => this.onPointRemoved(e));
-  
+
     this.pedestalViewMediator = this.mediatorFactory.getMediator(world.pedestal);
     this.object3D.add(this.pedestalViewMediator.object3D);
 

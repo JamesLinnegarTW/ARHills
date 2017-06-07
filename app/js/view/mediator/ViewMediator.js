@@ -1,4 +1,5 @@
 import Observable from '../../Observable';
+import 'three';
 
 export default class ViewMediator extends Observable {
     constructor(renderObject, mediatorFactory) {
@@ -12,7 +13,7 @@ export default class ViewMediator extends Observable {
         this.object3D.traverse((object3D) => {
             object3D.mediator = this;
         });
-        
+
     }
 
     makeObject3D() {
@@ -26,10 +27,11 @@ export default class ViewMediator extends Observable {
 
         this.childMediators.set(child, mediator);
         this.object3D.children[0].add(mediator.object3D);
-
+/*
         for (const childofChild of child) {
             mediator.addChild(childofChild);
         }
+        */
     }
 
     removeChild(child) {
