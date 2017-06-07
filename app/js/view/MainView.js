@@ -33,10 +33,9 @@ export default class MainView {
 
     render() {
         this.orientateCamera();
-        requestAnimationFrame(() => this.render());
         this.worldViewMediator.onFrameRenderered();
         this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
-
+        requestAnimationFrame(() => this.render());
     }
 
     orientateCamera(){
@@ -62,7 +61,7 @@ export default class MainView {
 
       }
     }
-    
+
     onWindowResize(){
 
         const relativeFOVFrustrumHeight = this.startFOVFrustrumHeight * ( window.innerHeight / this.startClientHeight );

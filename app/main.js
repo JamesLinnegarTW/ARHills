@@ -11,7 +11,17 @@ const worldController = new WorldController(world);
 
 const latLon = new LatLonSpherical(53.363701, -2.002889);
 
-let manchester = new Point("Manchester", latLon, {position:{bearing: 0, distance:30}});
+const GPS_OPTIONS = {
+  enableHighAccuracy: false,
+  timeout: 5000,
+  maximumAge: 0
+};
+
+let manchester = new Point("Manchester", latLon);
+let stockport = new Point("Stockport", new LatLonSpherical(53.406884, -2.157279));
+
+
+worldController.addPoint(stockport);
 worldController.addPoint(manchester);
 
 function getLocation() {

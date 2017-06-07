@@ -10,52 +10,54 @@ export default class PointViewMediator extends ViewMediator {
   makeObject3D() {
     const container = new THREE.Object3D();
 
-
-    var loader = new THREE.ObjectLoader();
-    loader.load('/js/data/arrow.json', function(object){
+    new THREE.ObjectLoader().load('/js/data/arrow.json', (object)=>{
       container.add(object);
     });
 
-    return container;
-    /* balls */
-    const box = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial({
-        color: 0x0000ff
-      })
-    );
-
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 32, 32),
-      new THREE.MeshBasicMaterial({
-        color: 0x0000ff
-      })
-    );
-
-    const cone = new THREE.Mesh(
-      function() {
-        const radius = 1;
-        const height = 2;
-        const rSegments = 32;
-        var geom = new THREE.CylinderBufferGeometry(0, radius, height, rSegments, 1, true);
-        geom.translate(0, height / 2, 0);
-        return geom;
-      }(),
-      new THREE.MeshBasicMaterial({
-        color: 0x0000ff
-      })
-    );
-
-    cone.rotation.z = THREE.Math.degToRad(180);
-    container.add(cone);
-    container.add(sphere);
+    const text = this.makeTextSprite(this.renderObject.name);
+    container.add(text);
+    text.position.y = 2;
     return container;
   }
 
 
 
-  getPositionFromBearingAndDistance(bearing, distance) {
+  makeTextSprite( message )
+  {
 
+
+  	var canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 60;
+  	var context = canvas.getContext('2d');
+  	context.font =  "20px Arial Sans MS";
+    context.fillStyle = "black";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+  	// get size data (height depends only on font size)
+  	var metrics = context.measureText( message );
+    console.log(metrics);
+    //canvas.width = metrics.width;
+    //canvas.height = metrics.height;
+
+  	// background color
+  	context.fillText(message, canvas.width/2, canvas.height/2);
+
+  	// canvas contents will be used for a texture
+  	var texture = new THREE.Texture(canvas)
+  	texture.needsUpdate = true;
+
+  	var spriteMaterial = new THREE.SpriteMaterial(
+  		{ map: texture } );
+  	var sprite = new THREE.Sprite( spriteMaterial );
+  	sprite.scale.set(10,3,1.0);
+  	return sprite;
+  }
+
+
+
+  getPositionFromBearing(bearing) {
+    const distance = 30;
     const angle = THREE.Math.degToRad(bearing - 90)
 
     const x = Math.cos(angle) * distance,
@@ -68,10 +70,9 @@ export default class PointViewMediator extends ViewMediator {
   onFrameRenderered() {
     super.onFrameRenderered();
 
-    const position = this.getPositionFromBearingAndDistance(this.renderObject.properties.position.bearing,
-      this.renderObject.properties.position.distance);
+    const position = this.getPositionFromBearing(this.renderObject.bearing);
 
-    this.object3D.rotation.y += 0.01;
+    //this.object3D.rotation.y += 0.01;
     this.object3D.position.fromArray(position);
   }
 
