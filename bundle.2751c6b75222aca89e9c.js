@@ -77,7 +77,16 @@
 
 	var latLon = new _latlonSpherical2.default(53.363701, -2.002889);
 
-	var manchester = new _Point2.default("Manchester", latLon, { position: { bearing: 0, distance: 30 } });
+	var GPS_OPTIONS = {
+	    enableHighAccuracy: false,
+	    timeout: 5000,
+	    maximumAge: 0
+	};
+
+	var manchester = new _Point2.default("Manchester", latLon);
+	var stockport = new _Point2.default("Stockport", new _latlonSpherical2.default(53.406884, -2.157279));
+
+	worldController.addPoint(stockport);
 	worldController.addPoint(manchester);
 
 	function getLocation() {
@@ -50115,11 +50124,11 @@
 	            var _this2 = this;
 
 	            this.orientateCamera();
+	            this.worldViewMediator.onFrameRenderered();
+	            this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
 	            requestAnimationFrame(function () {
 	                return _this2.render();
 	            });
-	            this.worldViewMediator.onFrameRenderered();
-	            this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
 	        }
 	    }, {
 	        key: 'orientateCamera',
@@ -50204,7 +50213,7 @@
 	            var scene = new THREE.Scene();
 	            var camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000);
 	            var renderer = new THREE.WebGLRenderer({ alpha: true });
-	            //camera.position.y = 50;
+	            camera.position.y = 50;
 	            renderer.setSize(width, height);
 	            containerElement.appendChild(renderer.domElement);
 	            return new RenderingContext(scene, camera, renderer);
@@ -51577,11 +51586,6 @@
 
 	            this.childMediators.set(child, mediator);
 	            this.object3D.children[0].add(mediator.object3D);
-	            /*
-	                    for (const childofChild of child) {
-	                        mediator.addChild(childofChild);
-	                    }
-	                    */
 	        }
 	    }, {
 	        key: 'removeChild',
@@ -51767,41 +51771,49 @@
 	    value: function makeObject3D() {
 	      var container = new THREE.Object3D();
 
-	      var loader = new THREE.ObjectLoader();
-	      loader.load('/js/data/arrow.json', function (object) {
+	      new THREE.ObjectLoader().load('/js/data/arrow.json', function (object) {
 	        container.add(object);
 	      });
 
-	      return container;
-	      /* balls */
-	      var box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({
-	        color: 0x0000ff
-	      }));
-
-	      var sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({
-	        color: 0x0000ff
-	      }));
-
-	      var cone = new THREE.Mesh(function () {
-	        var radius = 1;
-	        var height = 2;
-	        var rSegments = 32;
-	        var geom = new THREE.CylinderBufferGeometry(0, radius, height, rSegments, 1, true);
-	        geom.translate(0, height / 2, 0);
-	        return geom;
-	      }(), new THREE.MeshBasicMaterial({
-	        color: 0x0000ff
-	      }));
-
-	      cone.rotation.z = THREE.Math.degToRad(180);
-	      container.add(cone);
-	      container.add(sphere);
+	      var text = this.makeTextSprite(this.renderObject.name);
+	      container.add(text);
+	      text.position.y = 2;
 	      return container;
 	    }
 	  }, {
-	    key: 'getPositionFromBearingAndDistance',
-	    value: function getPositionFromBearingAndDistance(bearing, distance) {
+	    key: 'makeTextSprite',
+	    value: function makeTextSprite(message) {
 
+	      var canvas = document.createElement('canvas');
+	      canvas.width = 200;
+	      canvas.height = 60;
+	      var context = canvas.getContext('2d');
+	      context.font = "20px Arial Sans MS";
+	      context.fillStyle = "black";
+	      context.textAlign = "center";
+	      context.textBaseline = "middle";
+	      // get size data (height depends only on font size)
+	      var metrics = context.measureText(message);
+	      console.log(metrics);
+	      //canvas.width = metrics.width;
+	      //canvas.height = metrics.height;
+
+	      // background color
+	      context.fillText(message, canvas.width / 2, canvas.height / 2);
+
+	      // canvas contents will be used for a texture
+	      var texture = new THREE.Texture(canvas);
+	      texture.needsUpdate = true;
+
+	      var spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+	      var sprite = new THREE.Sprite(spriteMaterial);
+	      sprite.scale.set(10, 3, 1.0);
+	      return sprite;
+	    }
+	  }, {
+	    key: 'getPositionFromBearing',
+	    value: function getPositionFromBearing(bearing) {
+	      var distance = 30;
 	      var angle = THREE.Math.degToRad(bearing - 90);
 
 	      var x = Math.cos(angle) * distance,
@@ -51814,9 +51826,9 @@
 	    value: function onFrameRenderered() {
 	      _get(PointViewMediator.prototype.__proto__ || Object.getPrototypeOf(PointViewMediator.prototype), 'onFrameRenderered', this).call(this);
 
-	      var position = this.getPositionFromBearingAndDistance(this.renderObject.properties.position.bearing, this.renderObject.properties.position.distance);
+	      var position = this.getPositionFromBearing(this.renderObject.bearing);
 
-	      this.object3D.rotation.y += 0.01;
+	      //this.object3D.rotation.y += 0.01;
 	      this.object3D.position.fromArray(position);
 	    }
 	  }]);
@@ -53022,15 +53034,14 @@
 	var Point = function (_RenderObject) {
 	    _inherits(Point, _RenderObject);
 
-	    function Point(name, location, properties) {
+	    function Point(name, location) {
 	        _classCallCheck(this, Point);
 
-	        var _this = _possibleConstructorReturn(this, (Point.__proto__ || Object.getPrototypeOf(Point)).call(this, name, properties));
+	        var _this = _possibleConstructorReturn(this, (Point.__proto__ || Object.getPrototypeOf(Point)).call(this, name, {}));
 
 	        _this.className = 'Point';
 	        _this.location = location;
-	        _this.properties = properties;
-	        _this.points = [];
+	        _this.bearing = 0;
 	        return _this;
 	    }
 
@@ -53039,7 +53050,7 @@
 	        value: function updateBearing(currentLatLon) {
 	            try {
 	                var bearing = currentLatLon.bearingTo(this.location);
-	                this.properties.position.bearing = bearing;
+	                this.bearing = bearing;
 	            } catch (e) {}
 	        }
 	    }]);
