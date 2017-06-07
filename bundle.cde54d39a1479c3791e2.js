@@ -34,7 +34,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/ARHills/";
+/******/ 	__webpack_require__.p = "/";
 
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -77,14 +77,8 @@
 
 	var latLon = new _latlonSpherical2.default(53.363701, -2.002889);
 
-	var manchester = new _Point2.default("Manchester", latLon, { position: { bearing: 0, distance: 20 } });
-	world.addPoint(manchester);
-
-	var GPS_OPTIONS = {
-	    enableHighAccuracy: false,
-	    timeout: 5000,
-	    maximumAge: 0
-	};
+	var manchester = new _Point2.default("Manchester", latLon, { position: { bearing: 0, distance: 30 } });
+	worldController.addPoint(manchester);
 
 	function getLocation() {
 	    if (navigator.geolocation) {
@@ -50029,6 +50023,16 @@
 	    value: function setLocation(currentLatLon) {
 	      this.world.updateLocation(currentLatLon);
 	    }
+	  }, {
+	    key: 'addPoint',
+	    value: function addPoint(point) {
+	      this.world.addPoint(point);
+	    }
+	  }, {
+	    key: 'removePoint',
+	    value: function removePoint(point) {
+	      this.world.removePoint(point);
+	    }
 	  }]);
 
 	  return WorldController;
@@ -50110,6 +50114,16 @@
 	        value: function render() {
 	            var _this2 = this;
 
+	            this.orientateCamera();
+	            requestAnimationFrame(function () {
+	                return _this2.render();
+	            });
+	            this.worldViewMediator.onFrameRenderered();
+	            this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
+	        }
+	    }, {
+	        key: 'orientateCamera',
+	        value: function orientateCamera() {
 	            try {
 	                // World frame quaternion transform (- PI/2 around the x-axis)
 	                var world_transform = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
@@ -50123,11 +50137,6 @@
 
 	                this.renderingContext.camera.quaternion.multiplyQuaternions(world_transform, threejs_quaternion);
 	            } catch (e) {}
-	            requestAnimationFrame(function () {
-	                return _this2.render();
-	            });
-	            this.worldViewMediator.onFrameRenderered();
-	            this.renderingContext.renderer.render(this.renderingContext.scene, this.renderingContext.camera);
 	        }
 	    }, {
 	        key: 'onWindowResize',
@@ -51523,6 +51532,8 @@
 
 	var _Observable3 = _interopRequireDefault(_Observable2);
 
+	__webpack_require__(297);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -51566,31 +51577,11 @@
 
 	            this.childMediators.set(child, mediator);
 	            this.object3D.children[0].add(mediator.object3D);
-
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
-
-	            try {
-	                for (var _iterator = child[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var childofChild = _step.value;
-
-	                    mediator.addChild(childofChild);
-	                }
-	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion && _iterator.return) {
-	                        _iterator.return();
+	            /*
+	                    for (const childofChild of child) {
+	                        mediator.addChild(childofChild);
 	                    }
-	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
-	                    }
-	                }
-	            }
+	                    */
 	        }
 	    }, {
 	        key: 'removeChild',
@@ -51605,27 +51596,27 @@
 	    }, {
 	        key: 'onFrameRenderered',
 	        value: function onFrameRenderered() {
-	            var _iteratorNormalCompletion2 = true;
-	            var _didIteratorError2 = false;
-	            var _iteratorError2 = undefined;
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
 
 	            try {
-	                for (var _iterator2 = this.childMediators.values()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                    var childMediator = _step2.value;
+	                for (var _iterator = this.childMediators.values()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var childMediator = _step.value;
 
 	                    childMediator.onFrameRenderered();
 	                }
 	            } catch (err) {
-	                _didIteratorError2 = true;
-	                _iteratorError2 = err;
+	                _didIteratorError = true;
+	                _iteratorError = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                        _iterator2.return();
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError2) {
-	                        throw _iteratorError2;
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
 	                    }
 	                }
 	            }
@@ -51776,9 +51767,20 @@
 	    value: function makeObject3D() {
 	      var container = new THREE.Object3D();
 
-	      var box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+	      var loader = new THREE.ObjectLoader();
+	      loader.load('/js/data/arrow.json', function (object) {
+	        container.add(object);
+	      });
 
-	      var sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+	      return container;
+	      /* balls */
+	      var box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({
+	        color: 0x0000ff
+	      }));
+
+	      var sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({
+	        color: 0x0000ff
+	      }));
 
 	      var cone = new THREE.Mesh(function () {
 	        var radius = 1;
@@ -51787,13 +51789,13 @@
 	        var geom = new THREE.CylinderBufferGeometry(0, radius, height, rSegments, 1, true);
 	        geom.translate(0, height / 2, 0);
 	        return geom;
-	      }(), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+	      }(), new THREE.MeshBasicMaterial({
+	        color: 0x0000ff
+	      }));
+
 	      cone.rotation.z = THREE.Math.degToRad(180);
-	      container.add(box);
 	      container.add(cone);
 	      container.add(sphere);
-
-	      //cone.position.y = -1;
 	      return container;
 	    }
 	  }, {
@@ -51814,7 +51816,7 @@
 
 	      var position = this.getPositionFromBearingAndDistance(this.renderObject.properties.position.bearing, this.renderObject.properties.position.distance);
 
-	      //this.object3D.rotation.y += 0.01;
+	      this.object3D.rotation.y += 0.01;
 	      this.object3D.position.fromArray(position);
 	    }
 	  }]);
@@ -53039,11 +53041,6 @@
 	                var bearing = currentLatLon.bearingTo(this.location);
 	                this.properties.position.bearing = bearing;
 	            } catch (e) {}
-	        }
-	    }, {
-	        key: Symbol.iterator,
-	        value: function value() {
-	            return this.points.values();
 	        }
 	    }]);
 
